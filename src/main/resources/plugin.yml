@@ -1,0 +1,24 @@
+name: Mapcdk
+version: '${project.version}'
+main: me.maplef.mapcdk.Mapcdk
+api-version: 1.19
+commands:
+  mapcdk:
+    description: "main command for MapCDK"
+    permission: "mapcdk"
+permissions:
+  mapcdk.*:
+    description: "full access to MapCDK"
+    children:
+      mapcdk.help: true
+      mapcdk.newcdk: true
+      mapcdk.deletecdk: true
+      mapcdk.cdkinfo: true
+  mapcdk.help:
+    default: true
+  mapcdk.newcdk:
+    default: op
+  mapcdk.deletecdk:
+    default: op
+  mapcdk.cdkinfo:
+    default: op

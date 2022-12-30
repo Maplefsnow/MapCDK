@@ -1,0 +1,8 @@
+
+
+use-mysql: false  # use MySQL or SQLite
+mysql-host:
+mysql-port:
+mysql-database:
+mysql-username:
+mysql-password:
