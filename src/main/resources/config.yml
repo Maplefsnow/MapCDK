@@ -1,4 +1,4 @@
-
+message-prefix: "&e[MapCDK] "
 
 use-mysql: false  # use MySQL or SQLite
 mysql-host:

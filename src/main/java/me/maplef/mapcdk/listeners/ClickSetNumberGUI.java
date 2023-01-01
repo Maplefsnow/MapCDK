@@ -5,14 +5,11 @@ import me.maplef.mapcdk.GUI.ItemHub;
 import me.maplef.mapcdk.utils.CDKLib;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.ItemStack;
 
 public class ClickSetNumberGUI implements Listener {
     @EventHandler

@@ -1,13 +1,20 @@
 package me.maplef.mapcdk;
 
+import com.alibaba.fastjson.JSONArray;
 import me.maplef.mapcdk.utils.CDKGenerator;
 import org.bukkit.inventory.ItemStack;
+import org.json.simple.JSONObject;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,8 +131,34 @@ public class CDK {
         return this.numbersLeft;
     }
 
-    public void exportToJSON() {
+    public void exportToJSON(File path) throws IOException{
+        JSONObject cdkJson = new JSONObject();
 
+        JSONObject cdkInfo = new JSONObject();
+        cdkInfo.put("cdk_string", this.cdkString);
+        cdkInfo.put("create_time", this.createTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        cdkInfo.put("expire_time", this.expireTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        cdkInfo.put("creator", this.creator);
+        cdkInfo.put("numbers_left", this.numbersLeft);
+
+        JSONArray cdkRewards = new JSONArray();
+        for(ItemStack item : this.rewardItems) {
+            JSONObject obj = new JSONObject();
+            obj.put("material", item.getType().name());
+            obj.put("amount", item.getAmount());
+            cdkRewards.add(obj);
+        }
+
+        JSONArray cdkCommands = new JSONArray();
+        cdkCommands.addAll(this.rewardCmds);
+
+        cdkJson.put("cdk_info", cdkInfo);
+        cdkJson.put("cdk_rewards", cdkRewards);
+        cdkJson.put("cdk_commands", cdkCommands);
+
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path, this.cdkString + ".json")));
+        bw.write(cdkJson.toJSONString());
+        bw.close();
     }
 
     public void exportToDataBase(Connection c) throws SQLException {

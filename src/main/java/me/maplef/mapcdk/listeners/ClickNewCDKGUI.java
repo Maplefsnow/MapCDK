@@ -2,14 +2,13 @@ package me.maplef.mapcdk.listeners;
 
 import me.maplef.mapcdk.GUI.GUIHub;
 import me.maplef.mapcdk.GUI.ItemHub;
+import me.maplef.mapcdk.Mapcdk;
 import me.maplef.mapcdk.utils.CDKLib;
 import me.maplef.mapcdk.utils.Database;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,6 +16,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 public class ClickNewCDKGUI implements Listener {
@@ -29,12 +30,12 @@ public class ClickNewCDKGUI implements Listener {
         e.setCancelled(true);
 
         if(e.getCurrentItem() == null && e.getClickedInventory() != null && !e.getClickedInventory().getType().equals(InventoryType.PLAYER)){
-            e.getClickedInventory().setItem(8, ItemHub.NEWCDK_QUIT);
+            e.getClickedInventory().setItem(9, ItemHub.NEWCDK_QUIT);
         }
 
         if(e.getCurrentItem() != null && e.getClickedInventory() != null) {
             if(!e.getCurrentItem().equals(ItemHub.NEWCDK_CONFIRMQUIT)){
-                e.getClickedInventory().setItem(8, ItemHub.NEWCDK_QUIT);
+                e.getClickedInventory().setItem(9, ItemHub.NEWCDK_QUIT);
             }
 
             switch (e.getSlot()) {
@@ -50,9 +51,10 @@ public class ClickNewCDKGUI implements Listener {
                 case 3 -> {
                     GUIHub.setExpTime((Player) e.getWhoClicked());
                 }
-                case 7 -> {
+                case 17 -> {
                     try {
                         CDKLib.cdkMap.get(e.getWhoClicked().getName()).exportToDataBase(new Database().getC());
+                        CDKLib.cdkMap.get(e.getWhoClicked().getName()).exportToJSON(Mapcdk.getInstance().getDataFolder());
                         e.getClickedInventory().close();
 
                         Component successMsg = Component.text("[MapCDK] ").color(NamedTextColor.GREEN);
@@ -68,14 +70,13 @@ public class ClickNewCDKGUI implements Listener {
                         e.getWhoClicked().sendMessage(successMsg);
 
                         CDKLib.cdkMap.remove(e.getWhoClicked().getName());
-                    } catch (SQLException ex) {
+                    } catch (SQLException | IOException ex) {
                         ex.printStackTrace();
                     }
-
                 }
-                case 8 -> {
+                case 9 -> {
                     if(e.getCurrentItem().equals(ItemHub.NEWCDK_QUIT)) {
-                        e.getClickedInventory().setItem(8, ItemHub.NEWCDK_CONFIRMQUIT);
+                        e.getClickedInventory().setItem(9, ItemHub.NEWCDK_CONFIRMQUIT);
                     } else if (e.getCurrentItem().equals(ItemHub.NEWCDK_CONFIRMQUIT)) {
                         if(e.getClick().equals(ClickType.SHIFT_LEFT)){
                             e.getClickedInventory().close();

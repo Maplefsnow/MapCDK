@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class ConfigManager {
-    static FileConfiguration config, messageConfig, autoReplyConfig;
+    FileConfiguration config, messageConfig, autoReplyConfig;
 
     public ConfigManager(){
         config = YamlConfiguration.loadConfiguration(new File(Mapcdk.getInstance().getDataFolder(), "config.yml"));
@@ -18,7 +18,7 @@ public class ConfigManager {
         autoReplyConfig = YamlConfiguration.loadConfiguration(new File(Mapcdk.getInstance().getDataFolder(), "auto_reply.yml"));
     }
 
-    public static void reloadConfig(String configFileName){
+    public void reloadConfig(String configFileName){
         switch (configFileName) {
             case "config.yml" -> {
                 config = YamlConfiguration.loadConfiguration(new File(Mapcdk.getInstance().getDataFolder(), configFileName));

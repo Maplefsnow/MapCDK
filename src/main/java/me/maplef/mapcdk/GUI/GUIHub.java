@@ -12,15 +12,15 @@ import org.bukkit.inventory.ItemStack;
 
 public class GUIHub {
     public static void newCDK(Player player) {
-        Inventory GUI = Bukkit.createInventory(player, 9, Component.text("MapCDK - 新建CDK").color(NamedTextColor.BLACK));
+        Inventory GUI = Bukkit.createInventory(player, 18, Component.text("MapCDK - 新建CDK").color(NamedTextColor.BLACK));
 
         GUI.setItem(0, ItemHub.NEWCDK_SUBMITINV);
         GUI.setItem(1, ItemHub.NEWCDK_SUBMITCMD);
         GUI.setItem(2, ItemHub.NEWCDK_SETNUMBER);
         GUI.setItem(3, ItemHub.NEWCDK_SETEXPTIME);
 
-        GUI.setItem(7, ItemHub.NEWCDK_SUBMIT);
-        GUI.setItem(8, ItemHub.NEWCDK_QUIT);
+        GUI.setItem(9, ItemHub.NEWCDK_QUIT);
+        GUI.setItem(17, ItemHub.NEWCDK_SUBMIT);
 
         player.openInventory(GUI);
     }
