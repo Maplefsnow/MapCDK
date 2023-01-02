@@ -1,30 +1,36 @@
 package me.maplef.mapcdk;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.destroystokyo.paper.MaterialTags;
 import me.maplef.mapcdk.utils.CDKGenerator;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.json.simple.JSONObject;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.rmi.NoSuchObjectException;
+import java.sql.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 public class CDK {
-    private String cdkString;
-    private String creator;
-    private LocalDateTime createTime;
+    private final String cdkString;
+    private final String creator;
+    private final LocalDateTime createTime;
     private LocalDateTime expireTime;
-    private int numbersLeft;
+    private int amountLeft;
 
     private List<ItemStack> rewardItems;
     private List<String> rewardCmds;
@@ -34,44 +40,126 @@ public class CDK {
         this.creator = creator;
         this.createTime = LocalDateTime.now();
         this.expireTime = this.createTime.plusMonths(1);
-        this.numbersLeft = 10;
+        this.amountLeft = 10;
 
         this.rewardItems = new ArrayList<>();
         this.rewardCmds = new ArrayList<>();
     }
-
     public CDK(String creator, LocalDateTime createTime, LocalDateTime expireTime, int numbersLeft, List<ItemStack> rewardItems, List<String> rewardCmds){
         this.cdkString = CDKGenerator.generateCDK(10);
         this.creator =creator;
         this.createTime = createTime;
         this.expireTime = expireTime;
-        this.numbersLeft = numbersLeft;
+        this.amountLeft = numbersLeft;
 
         this.rewardItems = rewardItems;
         this.rewardCmds = rewardCmds;
     }
+    // construct a CDK from database by cdk_string
+    public CDK(Connection c, String cdkString) throws NoSuchObjectException, SQLException {
+        Statement stmt = c.createStatement();
 
-    public void addExpireTime(long amoutToAdd, TemporalUnit unit) {
-        this.expireTime = this.expireTime.plus(amoutToAdd, unit);
+        ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info WHERE cdk_string = '%s';", cdkString));
+        if (res.next()) {
+            this.cdkString = cdkString;
+            this.amountLeft = res.getInt("amount_left");
+            this.createTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(res.getLong("create_time")), ZoneId.systemDefault());
+            this.expireTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(res.getLong("expire_time")), ZoneId.systemDefault());
+            this.creator = res.getString("creator");
+        } else throw new NoSuchObjectException("CDK not found");
+
+        res = stmt.executeQuery(String.format("SELECT * FROM cdk_reward WHERE cdk_string = '%s';", cdkString));
+        List<ItemStack> items = new ArrayList<>();
+        while(res.next()) {
+            String materialStr = res.getString("material");
+            int amount = res.getInt("amount");
+            ItemStack item = new ItemStack(Objects.requireNonNull(Material.getMaterial(materialStr)), amount);
+            items.add(item);
+        }
+        this.rewardItems = items;
+
+        res = stmt.executeQuery(String.format("SELECT * FROM cdk_command WHERE cdk_string = '%s';", cdkString));
+        List<String> commands = new ArrayList<>();
+        while(res.next()) {
+            commands.add(res.getString("command"));
+        }
+        this.rewardCmds = commands;
+    }
+    // construct a CDK from file "cdk_string.json"
+    public CDK(JSONObject json) throws IllegalArgumentException {
+        if(!json.containsKey("cdk_info")) throw new IllegalArgumentException("missing key: cdk_info");
+        if(!json.containsKey("cdk_rewards")) throw new IllegalArgumentException("missing key: cdk_rewards");
+        if(!json.containsKey("cdk_commands")) throw new IllegalArgumentException("missing key: cdk_commands");
+
+        JSONObject cdkInfo = json.getJSONObject("cdk_info");
+        JSONArray cdkRewards = json.getJSONArray("cdk_rewards");
+        JSONArray cdkCmds = json.getJSONArray("cdk_commands");
+
+        HashSet<String> keySet = new HashSet<>();
+        keySet.add("cdk_string"); keySet.add("creator");
+        keySet.add("create_time"); keySet.add("expire_time");
+        keySet.add("numbers_left");
+        for(String key : keySet) {
+            if (cdkInfo.getString(key) == null) throw new IllegalArgumentException("missing key: cdk_string." + key);
+        }
+
+        this.cdkString = cdkInfo.getString("cdk_string");
+        this.creator = cdkInfo.getString("creator");
+        this.createTime = LocalDateTime.parse(cdkInfo.getString("create_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.expireTime = LocalDateTime.parse(cdkInfo.getString("expire_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.amountLeft = cdkInfo.getInteger("numbers_left");
+
+        // get reward items
+        List<ItemStack> rewardItems = new ArrayList<>();
+        for(int i = 0; i < cdkRewards.size(); i++) {
+            String materialName = cdkRewards.getJSONObject(i).getString("material");
+            String amountStr = cdkRewards.getJSONObject(i).getString("amount");
+
+            if(materialName == null) throw new IllegalArgumentException(String.format("missing key: cdk_rewards[%d].material", i));
+            if(amountStr == null) throw new IllegalArgumentException(String.format("missing key: cdk_rewards[%d].amount", i));
+
+            int amount;
+            try {
+                amount = Integer.parseInt(amountStr);
+            } catch (NumberFormatException ex) {
+                throw new IllegalArgumentException(String.format("invalid number format: cdk_rewards[%d].amount", i));
+            }
+
+            Material material = Material.getMaterial(materialName);
+            if(material == null) throw new IllegalArgumentException(String.format("invalid material name: cdk_rewards[%d].material", i));
+            ItemStack item = new ItemStack(material, amount);
+            rewardItems.add(item);
+        }
+        this.rewardItems = rewardItems;
+
+        List<String> rewardCommands = new ArrayList<>();
+        for(int i = 0 ; i < cdkCmds.size(); i++) {
+            rewardCommands.add(cdkCmds.getString(i));
+        }
+        this.rewardCmds = rewardCommands;
     }
 
-    public void minusExpireTime(long amoutToMinus, TemporalUnit unit) throws IllegalArgumentException {
-        if(this.expireTime.minus(amoutToMinus, unit).isBefore(this.createTime)) {
+    public void addExpireTime(long amountToAdd, TemporalUnit unit) {
+        this.expireTime = this.expireTime.plus(amountToAdd, unit);
+    }
+
+    public void minusExpireTime(long amountToMinus, TemporalUnit unit) throws IllegalArgumentException {
+        if(this.expireTime.minus(amountToMinus, unit).isBefore(this.createTime)) {
             throw new IllegalArgumentException();
         } else {
-            this.expireTime = this.expireTime.minus(amoutToMinus, unit);
+            this.expireTime = this.expireTime.minus(amountToMinus, unit);
         }
     }
 
-    public void setNumbersLeft(int numberToSet) {
-        this.numbersLeft = numberToSet;
+    public void setAmountLeft(int numberToSet) {
+        this.amountLeft = numberToSet;
     }
 
     public void addNumbersLeft(int numberToAdd) throws IllegalArgumentException {
-        if(this.numbersLeft + numberToAdd <= 0) {
+        if(this.amountLeft + numberToAdd <= 0) {
             throw new IllegalArgumentException();
         } else {
-            this.numbersLeft += numberToAdd;
+            this.amountLeft += numberToAdd;
         }
     }
 
@@ -127,8 +215,8 @@ public class CDK {
         return this.expireTime;
     }
 
-    public int getNumbersLeft() {
-        return this.numbersLeft;
+    public int getAmountLeft() {
+        return this.amountLeft;
     }
 
     public void exportToJSON(File path) throws IOException{
@@ -136,10 +224,10 @@ public class CDK {
 
         JSONObject cdkInfo = new JSONObject();
         cdkInfo.put("cdk_string", this.cdkString);
-        cdkInfo.put("create_time", this.createTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        cdkInfo.put("expire_time", this.expireTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        cdkInfo.put("create_time", this.createTime);
+        cdkInfo.put("expire_time", this.expireTime);
         cdkInfo.put("creator", this.creator);
-        cdkInfo.put("numbers_left", this.numbersLeft);
+        cdkInfo.put("numbers_left", this.amountLeft);
 
         JSONArray cdkRewards = new JSONArray();
         for(ItemStack item : this.rewardItems) {
@@ -157,23 +245,24 @@ public class CDK {
         cdkJson.put("cdk_commands", cdkCommands);
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path, this.cdkString + ".json")));
-        bw.write(cdkJson.toJSONString());
+        bw.write(JSON.toJSONString(cdkJson, SerializerFeature.PrettyFormat,
+                                            SerializerFeature.WriteDateUseDateFormat));
         bw.close();
     }
 
     public void exportToDataBase(Connection c) throws SQLException {
-        PreparedStatement ps = c.prepareStatement("INSERT INTO cdk_info (cdk_string, numbers_left, create_time, expire_time, creator)" +
+        PreparedStatement ps = c.prepareStatement("INSERT INTO cdk_info (cdk_string, amount_left, create_time, expire_time, creator)" +
                 " VALUES (?, ?, ?, ?, ?)");
 
         ps.setString(1, this.cdkString);
-        ps.setInt(2, this.numbersLeft);
+        ps.setInt(2, this.amountLeft);
         ps.setTimestamp(3, Timestamp.valueOf(this.expireTime));
         ps.setTimestamp(4, Timestamp.valueOf(this.expireTime));
         ps.setString(5, this.creator);
 
         ps.execute();
 
-        ps = c.prepareStatement("INSERT INTO cdk_reward (cdk_string, material, number)" +
+        ps = c.prepareStatement("INSERT INTO cdk_reward (cdk_string, material, amount)" +
                 " VALUES (?, ?, ?)");
 
         ps.setString(1, this.cdkString);

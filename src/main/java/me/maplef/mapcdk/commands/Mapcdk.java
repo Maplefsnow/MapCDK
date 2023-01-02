@@ -4,6 +4,7 @@ import me.maplef.mapcdk.CDK;
 import me.maplef.mapcdk.GUI.GUIHub;
 import me.maplef.mapcdk.utils.CDKLib;
 import me.maplef.mapcdk.utils.CU;
+import me.maplef.mapcdk.utils.Database;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -16,6 +17,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.rmi.NoSuchObjectException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,12 +72,29 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
 
             }
 
+            // receive CDK rewards
             default -> {
-
+                if(! (sender instanceof Player)){
+                    sender.sendMessage("Only players can receive CDKs!");
+                    return true;
+                }
+                receiveCDK((Player) sender, args[0]);
             }
         }
 
         return false;
+    }
+
+    private void receiveCDK(Player player, String cdkString) {
+        CDK cdk;
+        try {
+            cdk = new CDK(new Database().getC(), cdkString);
+        } catch (NoSuchObjectException e) {
+            player.sendMessage(Component.text("未找到此 CDK，请确保输入了正确的 CDK").color(NamedTextColor.RED));
+        } catch (SQLException e) {
+            player.sendMessage(Component.text("发生了数据库错误").color(NamedTextColor.RED));
+            e.printStackTrace();
+        }
     }
 
     private @NotNull String getHelpMessage(CommandSender sender) {
@@ -106,6 +126,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                 if(sender.hasPermission("mapcdk." + commandName))
                     commandList.add(commandName);
 
+            commandList.add("<CDK>");
             return commandList;
         }
         return null;

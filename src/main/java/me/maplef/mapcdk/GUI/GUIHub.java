@@ -3,8 +3,6 @@ package me.maplef.mapcdk.GUI;
 import me.maplef.mapcdk.utils.CDKLib;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -94,7 +92,7 @@ public class GUIHub {
         GUI.setItem(14, ItemHub.SETNUMBER_ADD10);
         GUI.setItem(23, ItemHub.SETNUMBER_ADD100);
 
-        GUI.setItem(13, ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(player.getName()).getNumbersLeft()));
+        GUI.setItem(13, ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(player.getName()).getAmountLeft()));
 
         GUI.setItem(26, ItemHub.SETNUMBER_CONFIRM);
 
