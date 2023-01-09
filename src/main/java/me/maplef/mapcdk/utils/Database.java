@@ -37,7 +37,8 @@ public class Database {
                             "    amount_left  INTEGER  NOT NULL," +
                             "    create_time  DATETIME," +
                             "    expire_time  DATETIME," +
-                            "    creator      TEXT" +
+                            "    creator      TEXT," +
+                            "    note         TEXT" +
                             ");");
             ps.execute();
 
@@ -53,6 +54,14 @@ public class Database {
                     "CREATE TABLE IF NOT EXISTS cdk_command (" +
                             "    cdk_string   TEXT     NOT NULL," +
                             "    command      INTEGER  NOT NULL" +
+                            ");");
+            ps.execute();
+
+            ps = c.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS cdk_receive (" +
+                            "    cdk_string   TEXT     NOT NULL," +
+                            "    receiver     TEXT     NOT NULL," +
+                            "    receive_time DATETIME NOT NULL" +
                             ");");
             ps.execute();
 

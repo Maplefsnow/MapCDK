@@ -16,13 +16,12 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
 public class ClickNewCDKGUI implements Listener {
     @EventHandler
-    public void onClicknewCDKGUI(InventoryClickEvent e) {
+    public void onClickNewCDKGUI(InventoryClickEvent e) {
         if(!e.getView().title().equals(Component.text("MapCDK - 新建CDK").color(NamedTextColor.BLACK))) {
             return;
         }

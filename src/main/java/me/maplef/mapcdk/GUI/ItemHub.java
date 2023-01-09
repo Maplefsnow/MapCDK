@@ -56,6 +56,9 @@ public class ItemHub {
     public static final ItemStack EXPTIME_DEC_MON = getEXPTIME_DEC("月");
     public static final ItemStack EXPTIME_DEC_YER = getEXPTIME_DEC("年");
 
+    public static final ItemStack RECEIVECDK_RECEIVE_ALL = getRECEIVECDK_RECEIVE_ALL();
+    public static final ItemStack RECEIVECDK_RECEIVE_FAIL = getRECEIVECDK_RECEIVE_FAIL();
+
     // ----------------------------------------
 
     private static @NotNull ItemStack getSUBMITINV_CANCEL(){
@@ -195,7 +198,7 @@ public class ItemHub {
         cmdBookItem_meta.addPages(Component.text("在下一页写下所有要添加到CDK的命令\n" +
                 "每个命令独占一行，以 '/' 开头，允许添加多页\n" +
                 "完成后点击署名，将书名设为 \"commands\"，在上传物品页面和物品一同提交\n" +
-                "可使用的变量占位符：{PLAYER}\n" +
+                "可使用的变量占位符：%PLAYER%\n" +
                 "尚未支持 PlaceHolder API，敬请期待\n" +
                 "---------------------------\n"));
         List<Component> lores = new ArrayList<>();
@@ -251,5 +254,33 @@ public class ItemHub {
         decItem_meta.displayName(Component.text("-1" + unit).color(NamedTextColor.RED));
         decItem.setItemMeta(decItem_meta);
         return decItem;
+    }
+
+    // ------------------------------------------------------------
+
+    public static ItemStack getRECEIVECDK_RECEIVE_ALL() {
+        ItemStack receiveAllItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+        ItemMeta receiveAllItem_meta = receiveAllItem.getItemMeta();
+        receiveAllItem_meta.displayName(Component.text("一键领取").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD));
+
+        List<Component> lores = new ArrayList<>();
+        lores.add(Component.text("一键领取所有物品和指令").color(NamedTextColor.BLUE));
+
+        receiveAllItem_meta.lore(lores);
+        receiveAllItem.setItemMeta(receiveAllItem_meta);
+        return receiveAllItem;
+    }
+
+    public static ItemStack getRECEIVECDK_RECEIVE_FAIL() {
+        ItemStack receiveFailItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+        ItemMeta receiveFailItem_meta = receiveFailItem.getItemMeta();
+        receiveFailItem_meta.displayName(Component.text("领取失败").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD));
+
+        List<Component> lores = new ArrayList<>();
+        lores.add(Component.text("背包内剩余空间不足，请清理背包").color(NamedTextColor.LIGHT_PURPLE));
+
+        receiveFailItem_meta.lore(lores);
+        receiveFailItem.setItemMeta(receiveFailItem_meta);
+        return receiveFailItem;
     }
 }

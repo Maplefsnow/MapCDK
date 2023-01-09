@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.destroystokyo.paper.MaterialTags;
 import me.maplef.mapcdk.utils.CDKGenerator;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -31,26 +30,29 @@ public class CDK {
     private final LocalDateTime createTime;
     private LocalDateTime expireTime;
     private int amountLeft;
+    private final String note;
 
     private List<ItemStack> rewardItems;
     private List<String> rewardCmds;
 
-    public CDK(String creator){
+    public CDK(String creator, String note){
         this.cdkString = CDKGenerator.generateCDK(10);
         this.creator = creator;
         this.createTime = LocalDateTime.now();
         this.expireTime = this.createTime.plusMonths(1);
         this.amountLeft = 10;
+        this.note = note;
 
         this.rewardItems = new ArrayList<>();
         this.rewardCmds = new ArrayList<>();
     }
-    public CDK(String creator, LocalDateTime createTime, LocalDateTime expireTime, int numbersLeft, List<ItemStack> rewardItems, List<String> rewardCmds){
+    public CDK(String creator, LocalDateTime createTime, LocalDateTime expireTime, int numbersLeft, String note, List<ItemStack> rewardItems, List<String> rewardCmds){
         this.cdkString = CDKGenerator.generateCDK(10);
         this.creator =creator;
         this.createTime = createTime;
         this.expireTime = expireTime;
         this.amountLeft = numbersLeft;
+        this.note = note;
 
         this.rewardItems = rewardItems;
         this.rewardCmds = rewardCmds;
@@ -66,6 +68,7 @@ public class CDK {
             this.createTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(res.getLong("create_time")), ZoneId.systemDefault());
             this.expireTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(res.getLong("expire_time")), ZoneId.systemDefault());
             this.creator = res.getString("creator");
+            this.note = res.getString("note");
         } else throw new NoSuchObjectException("CDK not found");
 
         res = stmt.executeQuery(String.format("SELECT * FROM cdk_reward WHERE cdk_string = '%s';", cdkString));
@@ -90,6 +93,7 @@ public class CDK {
         if(!json.containsKey("cdk_info")) throw new IllegalArgumentException("missing key: cdk_info");
         if(!json.containsKey("cdk_rewards")) throw new IllegalArgumentException("missing key: cdk_rewards");
         if(!json.containsKey("cdk_commands")) throw new IllegalArgumentException("missing key: cdk_commands");
+        if(!json.containsKey("note")) throw new IllegalArgumentException("missing key: note");
 
         JSONObject cdkInfo = json.getJSONObject("cdk_info");
         JSONArray cdkRewards = json.getJSONArray("cdk_rewards");
@@ -108,6 +112,7 @@ public class CDK {
         this.createTime = LocalDateTime.parse(cdkInfo.getString("create_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         this.expireTime = LocalDateTime.parse(cdkInfo.getString("expire_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         this.amountLeft = cdkInfo.getInteger("numbers_left");
+        this.note = cdkInfo.getString("note");
 
         // get reward items
         List<ItemStack> rewardItems = new ArrayList<>();
@@ -228,6 +233,7 @@ public class CDK {
         cdkInfo.put("expire_time", this.expireTime);
         cdkInfo.put("creator", this.creator);
         cdkInfo.put("numbers_left", this.amountLeft);
+        cdkInfo.put("note", this.note);
 
         JSONArray cdkRewards = new JSONArray();
         for(ItemStack item : this.rewardItems) {
@@ -251,14 +257,15 @@ public class CDK {
     }
 
     public void exportToDataBase(Connection c) throws SQLException {
-        PreparedStatement ps = c.prepareStatement("INSERT INTO cdk_info (cdk_string, amount_left, create_time, expire_time, creator)" +
-                " VALUES (?, ?, ?, ?, ?)");
+        PreparedStatement ps = c.prepareStatement("INSERT INTO cdk_info (cdk_string, amount_left, create_time, expire_time, creator, note)" +
+                " VALUES (?, ?, ?, ?, ?, ?)");
 
         ps.setString(1, this.cdkString);
         ps.setInt(2, this.amountLeft);
         ps.setTimestamp(3, Timestamp.valueOf(this.expireTime));
         ps.setTimestamp(4, Timestamp.valueOf(this.expireTime));
         ps.setString(5, this.creator);
+        ps.setString(6, this.note);
 
         ps.execute();
 

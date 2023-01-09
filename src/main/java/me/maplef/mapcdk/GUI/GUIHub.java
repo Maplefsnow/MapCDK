@@ -98,4 +98,14 @@ public class GUIHub {
 
         player.openInventory(GUI);
     }
+
+    public static void receiveCDK(Player player, ItemStack[] items) {
+        Inventory GUI = Bukkit.createInventory(player, 36, Component.text("MapCDK - 领取CDK").color(NamedTextColor.BLACK));
+
+        for(int i = 0; i < items.length; i++) GUI.setItem(i, items[i]);
+
+        GUI.setItem(35, ItemHub.RECEIVECDK_RECEIVE_ALL);
+
+        player.openInventory(GUI);
+    }
 }
