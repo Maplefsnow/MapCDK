@@ -1,7 +1,7 @@
 name: Mapcdk
 version: '${project.version}'
 main: me.maplef.mapcdk.Mapcdk
-api-version: 1.19
+api-version: 1.13
 commands:
   mapcdk:
     description: "main command for MapCDK"

@@ -4,10 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import me.maplef.mapcdk.exceptions.InsufficientInventorySpaceException;
 import me.maplef.mapcdk.utils.CDKGenerator;
+import me.maplef.mapcdk.utils.ConfigManager;
+import me.maplef.mapcdk.utils.Database;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import javax.naming.InsufficientResourcesException;
+import javax.naming.TimeLimitExceededException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -35,8 +43,10 @@ public class CDK {
     private List<ItemStack> rewardItems;
     private List<String> rewardCmds;
 
+    private final FileConfiguration config = new ConfigManager().getConfig();
+
     public CDK(String creator, String note){
-        this.cdkString = CDKGenerator.generateCDK(10);
+        this.cdkString = CDKGenerator.generateCDKbyFormat(config.getString("CDK-format"));
         this.creator = creator;
         this.createTime = LocalDateTime.now();
         this.expireTime = this.createTime.plusMonths(1);
@@ -47,7 +57,7 @@ public class CDK {
         this.rewardCmds = new ArrayList<>();
     }
     public CDK(String creator, LocalDateTime createTime, LocalDateTime expireTime, int numbersLeft, String note, List<ItemStack> rewardItems, List<String> rewardCmds){
-        this.cdkString = CDKGenerator.generateCDK(10);
+        this.cdkString = CDKGenerator.generateCDKbyFormat(config.getString("CDK-format"));
         this.creator =creator;
         this.createTime = createTime;
         this.expireTime = expireTime;
@@ -148,6 +158,10 @@ public class CDK {
         this.expireTime = this.expireTime.plus(amountToAdd, unit);
     }
 
+    public void setExpireTime(LocalDateTime expireTime) {
+        this.expireTime = expireTime;
+    }
+
     public void minusExpireTime(long amountToMinus, TemporalUnit unit) throws IllegalArgumentException {
         if(this.expireTime.minus(amountToMinus, unit).isBefore(this.createTime)) {
             throw new IllegalArgumentException();
@@ -224,6 +238,28 @@ public class CDK {
         return this.amountLeft;
     }
 
+    public String getNote() {
+        return note;
+    }
+
+    public List<CDKReceiver> getReceivers() {
+        List<CDKReceiver> receivers = new ArrayList<>();
+
+        try (Statement stmt = new Database().getC().createStatement();
+             ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_receive WHERE cdk_string = '%s'", this.cdkString))){
+            CDKReceiver receiver = new CDKReceiver();
+            while (res.next()) {
+                receiver.setReceiverName(res.getString("receiver"));
+                receiver.setReceiveTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(res.getLong("receive_time")), ZoneId.systemDefault()));
+                receivers.add(receiver);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return receivers;
+    }
+
     public void exportToJSON(File path) throws IOException{
         JSONObject cdkJson = new JSONObject();
 
@@ -257,8 +293,30 @@ public class CDK {
     }
 
     public void exportToDataBase(Connection c) throws SQLException {
-        PreparedStatement ps = c.prepareStatement("INSERT INTO cdk_info (cdk_string, amount_left, create_time, expire_time, creator, note)" +
-                " VALUES (?, ?, ?, ?, ?, ?)");
+        boolean is_exist;
+
+        Statement stmt = c.createStatement();
+        ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info WHERE cdk-string = '%s'", this.cdkString));
+        is_exist = res.next();
+
+        PreparedStatement ps;
+
+        if(is_exist) {
+            ps = c.prepareStatement("DELETE FROM cdk_info WHERE cdk_string = ?");
+            ps.setString(1, this.cdkString);
+            ps.execute();
+
+            ps = c.prepareStatement("DELETE FROM cdk_reward WHERE cdk_string = ?");
+            ps.setString(1, cdkString);
+            ps.execute();
+
+            ps = c.prepareStatement("DELETE FROM cdk_command WHERE cdk_string = ?");
+            ps.setString(1, cdkString);
+            ps.execute();
+        }
+
+        ps = c.prepareStatement("INSERT INTO cdk_info (cdk_string, amount_left, create_time, expire_time, creator, note)" +
+                    " VALUES (?, ?, ?, ?, ?, ?)");
 
         ps.setString(1, this.cdkString);
         ps.setInt(2, this.amountLeft);
@@ -281,6 +339,7 @@ public class CDK {
 
         ps = c.prepareStatement("INSERT INTO cdk_command (cdk_string, command)" +
                 " VALUES (?, ?)");
+
         ps.setString(1, this.cdkString);
         for(String cmd : this.rewardCmds) {
             ps.setString(2, cmd);
@@ -288,5 +347,42 @@ public class CDK {
         }
 
         ps.close();
+    }
+
+    public void sendToPlayer(Player player) throws TimeLimitExceededException, InsufficientResourcesException, InsufficientInventorySpaceException, SQLException {
+        if(LocalDateTime.now().isAfter(this.expireTime)) throw new TimeLimitExceededException();
+
+        if(this.getAmountLeft() <= 0) throw new InsufficientResourcesException();
+
+        int rewardAmount = this.rewardItems.size();
+        int emptySlotCnt = 0;
+        for(ItemStack item : player.getInventory().getStorageContents()) {
+            if(item == null) emptySlotCnt++;
+        }
+        if(emptySlotCnt < rewardAmount) throw new InsufficientInventorySpaceException(rewardAmount - emptySlotCnt);
+
+        this.amountLeft--;
+
+        PreparedStatement ps = new Database().getC().prepareStatement("INSERT INTO cdk_receive (cdk_string, receiver, receive_time) VALUES (?, ?, ?)");
+        ps.setString(1, this.cdkString);
+        ps.setString(2, player.getName());
+        ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+        ps.execute();
+
+        ps = new Database().getC()
+                .prepareStatement("UPDATE cdk_receive SET amount_left = '?' WHERE cdk_string = '?'");
+        ps.setInt(1, this.amountLeft);
+        ps.setString(2, this.cdkString);
+        ps.execute();
+
+
+        for(ItemStack item : this.rewardItems) {
+            player.getInventory().addItem(item);
+        }
+        for(String command : this.rewardCmds) {
+            if(command.startsWith("/")) command = command.substring(1);
+            command = command.replaceAll("%PLAYER%", player.getName());
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
     }
 }

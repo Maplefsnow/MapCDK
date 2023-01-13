@@ -1,7 +1,10 @@
 package me.maplef.mapcdk.commands;
 
+import com.sun.source.tree.ReturnTree;
 import me.maplef.mapcdk.CDK;
+import me.maplef.mapcdk.CDKReceiver;
 import me.maplef.mapcdk.GUI.GUIHub;
+import me.maplef.mapcdk.exceptions.InsufficientInventorySpaceException;
 import me.maplef.mapcdk.utils.CDKLib;
 import me.maplef.mapcdk.utils.CU;
 import me.maplef.mapcdk.utils.ConfigManager;
@@ -21,6 +24,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.naming.InsufficientResourcesException;
+import javax.naming.TimeLimitExceededException;
+import javax.sound.midi.Receiver;
 import java.rmi.NoSuchObjectException;
 import java.sql.*;
 import java.time.Instant;
@@ -49,7 +55,8 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                     return true;
                 }
                 else {
-                    CDKLib.cdkMap.put(sender.getName(), new CDK(sender.getName(), args[1]));
+                    if(args.length == 1) CDKLib.cdkMap.put(sender.getName(), new CDK(sender.getName(), null));
+                    else CDKLib.cdkMap.put(sender.getName(), new CDK(sender.getName(), args[1]));
                     GUIHub.newCDK((Player) sender);
                 }
             }
@@ -64,7 +71,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                 }
                 else {
                     if(CDKLib.cdkMap.get(sender.getName()) == null){
-                        sender.sendMessage(CU.t(config.getString("message-prefix")) + Component.text("你没有正在编辑中的CDK，请使用 /mapcdk newcdk 创建新的CDK").color(NamedTextColor.RED));
+                        sender.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("你没有正在编辑中的CDK，请使用 /mapcdk newcdk 创建新的CDK").color(NamedTextColor.RED)));
                         return true;
                     }
                     GUIHub.newCDK((Player) sender);
@@ -80,17 +87,23 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
             }
 
             case "list" -> {
-                List<CDK> CDKs = new ArrayList<>();
-                try (Statement stmt = new Database().getC().createStatement();
-                     ResultSet res = stmt.executeQuery("SELECT * FROM cdk_info")) {
-                    while(res.next()) {
-                        CDKs.add(new CDK(new Database().getC(), res.getString("cdk_string")));
-                    }
+                List<CDK> allCDK, CDK_page1;
+                try {
+                    allCDK = Database.getAllCDKFromDatabase();
+                    CDK_page1 = Database.getCDKPageFromDatabase(1);
                 } catch (SQLException e) {
+                    sender.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("发生了数据库错误").color(NamedTextColor.RED)));
                     e.printStackTrace();
-                } catch (NoSuchObjectException ignored) {}
+                    return true;
+                }
 
+                if(allCDK.size() <= 27) {
+                    GUIHub.listCDK((Player) sender, allCDK, 1, false);
+                } else {
+                    GUIHub.listCDK((Player) sender, CDK_page1, 1, true);
+                }
 
+                return true;
             }
 
             // receive CDK rewards
@@ -99,96 +112,51 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                     sender.sendMessage("Only players can receive CDKs!");
                     return true;
                 }
-                receiveCDK((Player) sender, args[0]);
+
+                Player player = (Player) sender;
+                CDK cdk;
+                try {
+                    cdk = new CDK(new Database().getC(), args[0]);
+                } catch (NoSuchObjectException e) {
+                    player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("未找到此 CDK，请确保输入了正确的 CDK").color(NamedTextColor.RED)));
+                    return true;
+                } catch (SQLException e) {
+                    player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("发生了数据库错误").color(NamedTextColor.RED)));
+                    e.printStackTrace();
+                    return true;
+                }
+
+                List<CDKReceiver> cdkReceivers = cdk.getReceivers();
+                for(CDKReceiver receiver : cdkReceivers) {
+                    if(receiver.getReceiverName().equals(player.getName())) {
+                        player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
+                                .append(Component.text(String.format("你已经于 %s 领取了该CDK，不能再次领取",
+                                        receiver.getReceiveTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))));
+                    }
+                }
+
+                try {
+                    cdk.sendToPlayer(player);
+                } catch (TimeLimitExceededException e) {
+                    player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
+                            .append(Component.text("此 CDK 已过期，无法领取").color(NamedTextColor.RED)));
+                } catch (InsufficientResourcesException e) {
+                    player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
+                            .append(Component.text("此 CDK 已被领取完，无法领取").color(NamedTextColor.RED)));
+                } catch (InsufficientInventorySpaceException e) {
+                    player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
+                            .append(Component.text(e.getMessage()).color(NamedTextColor.RED)));
+                } catch (SQLException e){
+                    player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("发生了数据库错误").color(NamedTextColor.RED)));
+                    e.printStackTrace();
+                    return true;
+                }
+
                 return true;
             }
         }
 
         return false;
-    }
-
-    private void receiveCDK(Player player, String cdkString) {
-        CDK cdk;
-        try {
-            cdk = new CDK(new Database().getC(), cdkString);
-        } catch (NoSuchObjectException e) {
-            player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("未找到此 CDK，请确保输入了正确的 CDK").color(NamedTextColor.RED)));
-            return;
-        } catch (SQLException e) {
-            player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("发生了数据库错误").color(NamedTextColor.RED)));
-            e.printStackTrace();
-            return;
-        }
-
-        if(LocalDateTime.now().isAfter(cdk.getExpireTime())) {
-            player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("此CDK已过期").color(NamedTextColor.RED)));
-            return;
-        }
-
-        try (Statement stmt = new Database().getC().createStatement();
-             ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info WHERE cdk_string = '%s'", cdk.getCdkString()))) {
-            res.next();
-            if(res.getInt("amount_left") <= 0) {
-                player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("此CDK已被领取完").color(NamedTextColor.RED)));
-                return;
-            }
-        } catch (SQLException e) {
-            player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("发生了数据库错误").color(NamedTextColor.RED)));
-            e.printStackTrace();
-            return;
-        }
-
-        try (Statement stmt = new Database().getC().createStatement();
-             ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_receive WHERE cdk_string = '%s' AND receiver = '%s'", cdk.getCdkString(), player.getName()))){
-            if(res.next()) {
-                LocalDateTime receiveTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(res.getLong("receive_time")), ZoneId.systemDefault());
-                player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
-                        .append(Component.text(String.format("你已经于 %s 领取过了该CDK，不能再次领取", receiveTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))).color(NamedTextColor.RED)));
-                return;
-            }
-        } catch (SQLException e) {
-            player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("发生了数据库错误").color(NamedTextColor.RED)));
-            e.printStackTrace();
-            return;
-        }
-
-        int rewardAmount = cdk.getRewardItems().size();
-        int emptySlotCnt = 0;
-        for(ItemStack item : player.getInventory().getStorageContents()) {
-            if(item == null) emptySlotCnt++;
-        }
-        if(emptySlotCnt < rewardAmount) {
-            player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("你的背包空间不足，请清理背包").color(NamedTextColor.RED)));
-            return;
-        }
-
-        try {
-            PreparedStatement ps = new Database().getC().prepareStatement("INSERT INTO cdk_receive (cdk_string, receiver, receive_time) VALUES (?, ?, ?)");
-            ps.setString(1, cdk.getCdkString());
-            ps.setString(2, player.getName());
-            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-            ps.execute();
-
-            ps = new Database().getC().prepareStatement("UPDATE cdk_info SET amount_left = ? WHERE cdk_string = ?");
-            ps.setInt(1, cdk.getAmountLeft() - 1);
-            ps.setString(2, cdk.getCdkString());
-            ps.execute();
-
-            ps.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        for(ItemStack item : cdk.getRewardItems()) {
-            player.getInventory().addItem(item);
-        }
-        for(String command : cdk.getRewardCmds()) {
-            if(command.startsWith("/")) command = command.substring(1);
-            command = command.replaceAll("%PLAYER%", player.getName());
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
-        }
-
-        player.sendMessage(Component.text(CU.t(config.getString("message-prefix"))).append(Component.text("CDK 领取成功！", NamedTextColor.GREEN, TextDecoration.BOLD)));
     }
 
     private @NotNull String getHelpMessage(CommandSender sender) {

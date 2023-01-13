@@ -1,8 +1,10 @@
 package me.maplef.mapcdk.GUI;
 
+import me.maplef.mapcdk.CDK;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -58,6 +60,9 @@ public class ItemHub {
 
     public static final ItemStack RECEIVECDK_RECEIVE_ALL = getRECEIVECDK_RECEIVE_ALL();
     public static final ItemStack RECEIVECDK_RECEIVE_FAIL = getRECEIVECDK_RECEIVE_FAIL();
+
+    public static final ItemStack LISTCDK_PREV = getLISTCDK_PREV();
+    public static final ItemStack LISTCDK_NEXT = getLISTCDK_NEXT();
 
     // ----------------------------------------
 
@@ -282,5 +287,72 @@ public class ItemHub {
         receiveFailItem_meta.lore(lores);
         receiveFailItem.setItemMeta(receiveFailItem_meta);
         return receiveFailItem;
+    }
+
+    // -------------------------------------------------------------
+
+    public static ItemStack getLISTCDK_CDK(CDK cdk) {
+        ItemStack cdkItem = new ItemStack(Material.BOOK);
+
+        ItemMeta cdkItem_meta = cdkItem.getItemMeta();
+        List<Component> lores = new ArrayList<>();
+
+        cdkItem_meta.displayName(Component.text(cdk.getNote(), NamedTextColor.GREEN));
+        lores.add(Component.text("CDK: ", NamedTextColor.WHITE).append(Component.text(cdk.getCdkString(), NamedTextColor.AQUA)));
+        lores.add(Component.text("剩余数量: ", NamedTextColor.WHITE).append(Component.text(cdk.getAmountLeft(), NamedTextColor.YELLOW)));
+        lores.add(Component.text("创建时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.GREEN)));
+        lores.add(Component.text("过期时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getExpireTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.RED)));
+        lores.add(Component.text("创建者: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreator(), NamedTextColor.BLUE)));
+
+        cdkItem.setItemMeta(cdkItem_meta);
+        cdkItem.lore(lores);
+
+        return cdkItem;
+    }
+
+
+    public static ItemStack getLISTCDK_EXPIRECDK(CDK cdk) {
+        ItemStack cdkItem = new ItemStack(Material.GUNPOWDER);
+
+        ItemMeta cdkItem_meta = cdkItem.getItemMeta();
+        List<Component> lores = new ArrayList<>();
+
+        cdkItem_meta.displayName(Component.text(cdk.getNote(), NamedTextColor.GRAY).append(Component.text(" [过期]", NamedTextColor.GRAY)));
+        lores.add(Component.text("CDK: ", NamedTextColor.WHITE).append(Component.text(cdk.getCdkString(), NamedTextColor.AQUA)));
+        lores.add(Component.text("剩余数量: ", NamedTextColor.WHITE).append(Component.text(cdk.getAmountLeft(), NamedTextColor.YELLOW)));
+        lores.add(Component.text("创建时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.GREEN)));
+        lores.add(Component.text("过期时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getExpireTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.RED)));
+        lores.add(Component.text("创建者: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreator(), NamedTextColor.BLUE)));
+
+        cdkItem.setItemMeta(cdkItem_meta);
+        cdkItem.lore(lores);
+
+        return cdkItem;
+    }
+
+
+    public static ItemStack getLISTCDK_PREV() {
+        ItemStack prevItem = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        ItemMeta prevItem_meta = prevItem.getItemMeta();
+        prevItem_meta.displayName(Component.text("上一页", NamedTextColor.YELLOW));
+        prevItem.setItemMeta(prevItem_meta);
+        return prevItem;
+    }
+
+    public static ItemStack getLISTCDK_NEXT() {
+        ItemStack nextItem = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        ItemMeta nextItem_meta = nextItem.getItemMeta();
+        nextItem_meta.displayName(Component.text("下一页", NamedTextColor.YELLOW));
+        nextItem.setItemMeta(nextItem_meta);
+        return nextItem;
+    }
+
+    public static ItemStack getLISTCDK_PAGE(int page) {
+        ItemStack pageItem = new ItemStack(Material.OAK_SIGN);
+        ItemMeta pageItem_meta = pageItem.getItemMeta();
+        pageItem_meta.displayName(Component.text("页码: " + page, NamedTextColor.RED));
+        pageItem.setItemMeta(pageItem_meta);
+
+        return pageItem;
     }
 }

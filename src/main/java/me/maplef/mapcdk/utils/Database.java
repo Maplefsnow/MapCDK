@@ -6,10 +6,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.rmi.NoSuchObjectException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
     ConfigManager configManager = new ConfigManager();
@@ -101,6 +101,53 @@ public class Database {
                 Bukkit.getLogger().warning(e.getClass().getName() + ": " + e.getMessage());
             }
             return conn;
+        }
+    }
+
+    public static List<CDK> getAllCDKFromDatabase() throws SQLException {
+        List<CDK> cdks = new ArrayList<>();
+
+        Statement stmt = c.createStatement();
+        ResultSet res = stmt.executeQuery("SELECT * FROM cdk_info");
+
+        CDK cdk;
+        while(res.next()) {
+            try {
+                cdk = new CDK(c, res.getString("cdk_string"));
+                cdks.add(cdk);
+            } catch (NoSuchObjectException ignored) {}
+        }
+
+        return cdks;
+    }
+
+    public static List<CDK> getCDKPageFromDatabase(int page) throws SQLException {
+        List<CDK> cdks = new ArrayList<>();
+
+        Statement stmt = c.createStatement();
+        ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info LIMIT %d, %d", (page-1) * 27, page * 27));
+
+        CDK cdk;
+        while(res.next()) {
+            try {
+                cdk = new CDK(c, res.getString("cdk_string"));
+                cdks.add(cdk);
+            } catch (NoSuchObjectException ignored) {}
+        }
+
+        return cdks;
+    }
+
+    public static void updateDatabase(Connection c, String tableName, String rowName, Object value, String condition) {
+        try {
+            PreparedStatement ps = c.prepareStatement("UPDATE ? SET ? = '?' WHERE ?");
+            ps.setString(1, tableName);
+            ps.setString(2, rowName);
+            ps.setObject(3, value);
+            ps.setString(4, condition);
+            ps.execute(); ps.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

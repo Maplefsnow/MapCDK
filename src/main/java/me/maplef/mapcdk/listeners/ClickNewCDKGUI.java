@@ -79,7 +79,12 @@ public class ClickNewCDKGUI implements Listener {
                     } else if (e.getCurrentItem().equals(ItemHub.NEWCDK_CONFIRMQUIT)) {
                         if(e.getClick().equals(ClickType.SHIFT_LEFT)){
                             e.setCancelled(true);
-                            e.getClickedInventory().close();
+                            try {
+                                this.wait(1);
+                                e.getClickedInventory().close();
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
                 }

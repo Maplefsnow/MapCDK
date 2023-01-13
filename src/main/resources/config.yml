@@ -6,3 +6,7 @@ mysql-port:
 mysql-database:
 mysql-username:
 mysql-password:
+
+# 设置你喜欢的 CDK 格式
+# 所有的 * 将会被替换为随机字符（A~Z, 0~9）
+CDK-format: "CAT-******-***"

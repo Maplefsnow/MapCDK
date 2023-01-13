@@ -1,5 +1,6 @@
 package me.maplef.mapcdk.GUI;
 
+import me.maplef.mapcdk.CDK;
 import me.maplef.mapcdk.utils.CDKLib;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -7,6 +8,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import javax.swing.text.StyledEditorKit;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class GUIHub {
     public static void newCDK(Player player) {
@@ -99,12 +104,31 @@ public class GUIHub {
         player.openInventory(GUI);
     }
 
-    public static void receiveCDK(Player player, ItemStack[] items) {
-        Inventory GUI = Bukkit.createInventory(player, 36, Component.text("MapCDK - 领取CDK").color(NamedTextColor.BLACK));
+    public static void listCDK(Player player, List<CDK> cdks, int page, boolean hasNextPage) {
+        Inventory GUI = Bukkit.createInventory(player, 36, Component.text(String.format("MapCDK - CDK列表 | 第 %d 页", page)).color(NamedTextColor.BLACK));
 
-        for(int i = 0; i < items.length; i++) GUI.setItem(i, items[i]);
+        int i = 0;
+        for(CDK cdk : cdks) {
+            if(cdk.getExpireTime().isAfter(LocalDateTime.now())){
+                GUI.setItem(i++, ItemHub.getLISTCDK_CDK(cdk));
+            } else {
+                GUI.setItem(i++, ItemHub.getLISTCDK_EXPIRECDK(cdk));
+            }
+            if(i > 26) break;
+        }
 
-        GUI.setItem(35, ItemHub.RECEIVECDK_RECEIVE_ALL);
+        if(page > 1) GUI.setItem(27, ItemHub.LISTCDK_PREV);
+        if(hasNextPage) GUI.setItem(35, ItemHub.LISTCDK_NEXT);
+
+        GUI.setItem(31, ItemHub.getLISTCDK_PAGE(page));
+
+        player.openInventory(GUI);
+    }
+
+    public static void viewCDK(Player player, CDK cdk){
+        Inventory GUI = Bukkit.createInventory(player, 18, Component.text("MapCDK - CDK列表").color(NamedTextColor.BLACK));
+
+
 
         player.openInventory(GUI);
     }
