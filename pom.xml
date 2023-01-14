@@ -6,7 +6,7 @@
 
     <groupId>me.maplef</groupId>
     <artifactId>mapcdk</artifactId>
-    <version>0.1-BETA</version>
+    <version>0.2.0beta</version>
     <packaging>jar</packaging>
 
     <name>Mapcdk</name>

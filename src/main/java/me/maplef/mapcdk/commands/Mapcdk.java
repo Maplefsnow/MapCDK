@@ -167,8 +167,8 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
         commands.put("cdk", "&e/mapcdk <cdk> &f- 兑换礼包码");
         commands.put("newcdk", "&e/mapcdk newcdk &f- 创建新的礼包码");
         commands.put("continue", "&e/mapcdk continue &f- 修改正在创建的礼包码");
-        commands.put("deletecdk", "&e/mapcdk deletecdk &f- 删除一个礼包码");
-        commands.put("cdkinfo", "&e/mapcdk cdkinfo &f- 查看礼包码信息");
+//        commands.put("deletecdk", "&e/mapcdk deletecdk &f- 删除一个礼包码");
+        commands.put("list", "&e/mapcdk list &f- 查看礼包码信息");
 
         for(String command : commands.keySet()){
             if(sender.hasPermission("mapcdk." + command))

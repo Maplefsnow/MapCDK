@@ -127,17 +127,12 @@ FileConfiguration config = configManager.getConfig();
         return cdks;
     }
 
-    public static void updateDatabase(Connection c, String tableName, String rowName, Object value, String condition) {
-        try {
-            PreparedStatement ps = c.prepareStatement("UPDATE ? SET ? = '?' WHERE ?");
-            ps.setString(1, tableName);
-            ps.setString(2, rowName);
-            ps.setObject(3, value);
-            ps.setString(4, condition);
-            ps.execute(); ps.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public static void deleteCDK(String cdkString) throws SQLException {
+        PreparedStatement ps = c.prepareStatement("DELETE FROM cdk_info WHERE cdk_string = ?");
+        ps.setString(1, cdkString);
+        ps.execute();
+
+        ps = c.prepareStatement("DELETE FROM cdk_reward WHERE cdk_string = ?");
     }
 
     public static void reconnect() {

@@ -267,6 +267,9 @@ public class CDK {
     }
 
     public void exportToJSON(File path) throws IOException{
+        File jsonFile = new File(path, this.cdkString + ".json");
+        if(jsonFile.exists()) jsonFile.delete();
+
         JSONObject cdkJson = new JSONObject();
 
         JSONObject cdkInfo = new JSONObject();
@@ -292,7 +295,7 @@ public class CDK {
         cdkJson.put("cdk_rewards", cdkRewards);
         cdkJson.put("cdk_commands", cdkCommands);
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path, this.cdkString + ".json")));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(jsonFile));
         bw.write(JSON.toJSONString(cdkJson, SerializerFeature.PrettyFormat,
                                             SerializerFeature.WriteDateUseDateFormat));
         bw.close();
