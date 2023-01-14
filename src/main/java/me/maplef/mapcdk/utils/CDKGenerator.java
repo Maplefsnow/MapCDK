@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class CDKGenerator {
     private static final FileConfiguration config = new ConfigManager().getConfig();
 
-    private static final String str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private static String generateCDKbyLength(int length) {
         Random random = new Random();

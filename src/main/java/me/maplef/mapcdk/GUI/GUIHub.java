@@ -117,18 +117,8 @@ public class GUIHub {
             if(i > 26) break;
         }
 
-        if(page > 1) GUI.setItem(27, ItemHub.LISTCDK_PREV);
+        if(page > 1) GUI.setItem(26, ItemHub.LISTCDK_PREV);
         if(hasNextPage) GUI.setItem(35, ItemHub.LISTCDK_NEXT);
-
-        GUI.setItem(31, ItemHub.getLISTCDK_PAGE(page));
-
-        player.openInventory(GUI);
-    }
-
-    public static void viewCDK(Player player, CDK cdk){
-        Inventory GUI = Bukkit.createInventory(player, 18, Component.text("MapCDK - CDK列表").color(NamedTextColor.BLACK));
-
-
 
         player.openInventory(GUI);
     }

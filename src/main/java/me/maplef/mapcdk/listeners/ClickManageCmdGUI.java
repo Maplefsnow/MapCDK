@@ -23,7 +23,6 @@ public class ClickManageCmdGUI implements Listener {
         if(!e.getView().title().equals(Component.text("MapCDK - 管理CDK命令").color(NamedTextColor.BLACK))){
             return;
         }
-
         if(e.getCurrentItem() == null){
             if (!e.getCursor().equals(ItemHub.MANAGECMD_BOOK) && !e.getCursor().getType().equals(Material.PAPER)) {
                 e.setCancelled(true);

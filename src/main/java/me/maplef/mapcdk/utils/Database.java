@@ -13,60 +13,49 @@ import java.util.List;
 
 public class Database {
     ConfigManager configManager = new ConfigManager();
-    FileConfiguration config = configManager.getConfig();
+FileConfiguration config = configManager.getConfig();
 
     private static Connection c = connect();
 
     public void init() throws SQLException {
-        if(config.getBoolean("use-mysql")){
-            PreparedStatement ps = c.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS cdk_info (" +
-                            "    cdk_string   TEXT     PRIMARY KEY," +
-                            "    numbers_left INTEGER  NOT NULL," +
-                            "    create_time  DATETIME," +
-                            "    expire_time  DATETIME," +
-                            "    creator      TEXT" +
-                            ");");
-            ps.execute();
+        // if(config.getBoolean("use-mysql"))
 
-            ps.close();
-        } else {
-            PreparedStatement ps = c.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS cdk_info (" +
-                            "    cdk_string   TEXT     PRIMARY KEY," +
-                            "    amount_left  INTEGER  NOT NULL," +
-                            "    create_time  DATETIME," +
-                            "    expire_time  DATETIME," +
-                            "    creator      TEXT," +
-                            "    note         TEXT" +
-                            ");");
-            ps.execute();
+        PreparedStatement ps = c.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS cdk_info (" +
+                        "    cdk_string   TEXT     PRIMARY KEY," +
+                        "    amount_left  INTEGER  NOT NULL," +
+                        "    create_time  DATETIME," +
+                        "    expire_time  DATETIME," +
+                        "    creator      TEXT," +
+                        "    note         TEXT" +
+                        ");");
+        ps.execute();
 
-            ps = c.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS cdk_reward (" +
-                            "    cdk_string   TEXT     NOT NULL," +
-                            "    material     TEXT     NOT NULL," +
-                            "    amount       INTEGER  NOT NULL" +
-                            ");");
-            ps.execute();
+        ps = c.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS cdk_reward (" +
+                        "    cdk_string   TEXT     NOT NULL," +
+                        "    material     TEXT     NOT NULL," +
+                        "    amount       INTEGER  NOT NULL" +
+                        ");");
+        ps.execute();
 
-            ps = c.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS cdk_command (" +
-                            "    cdk_string   TEXT     NOT NULL," +
-                            "    command      INTEGER  NOT NULL" +
-                            ");");
-            ps.execute();
+        ps = c.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS cdk_command (" +
+                        "    cdk_string   TEXT     NOT NULL," +
+                        "    command      INTEGER  NOT NULL" +
+                        ");");
+        ps.execute();
 
-            ps = c.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS cdk_receive (" +
-                            "    cdk_string   TEXT     NOT NULL," +
-                            "    receiver     TEXT     NOT NULL," +
-                            "    receive_time DATETIME NOT NULL" +
-                            ");");
-            ps.execute();
+        ps = c.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS cdk_receive (" +
+                        "    cdk_string   TEXT     NOT NULL," +
+                        "    receiver     TEXT     NOT NULL," +
+                        "    receive_time DATETIME NOT NULL" +
+                        ");");
+        ps.execute();
 
-            ps.close();
-        }
+        ps.close();
+
     }
 
     private static Connection connect() {

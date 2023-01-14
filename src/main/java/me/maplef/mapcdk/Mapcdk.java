@@ -37,6 +37,7 @@ public final class Mapcdk extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new ClickSetNumberGUI(), this);
         this.getServer().getPluginManager().registerEvents(new ClickSetExpTimeGUI(), this);
         this.getServer().getPluginManager().registerEvents(new CloseGUI(), this);
+        this.getServer().getPluginManager().registerEvents(new ClickListCDKGUI(), this);
 
         Objects.requireNonNull(getCommand("mapcdk")).setExecutor(new me.maplef.mapcdk.commands.Mapcdk());
         Objects.requireNonNull(getCommand("mapcdk")).setTabCompleter(new me.maplef.mapcdk.commands.Mapcdk());

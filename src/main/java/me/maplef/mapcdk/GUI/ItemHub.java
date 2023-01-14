@@ -1,10 +1,17 @@
 package me.maplef.mapcdk.GUI;
 
 import me.maplef.mapcdk.CDK;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.apache.logging.log4j.CloseableThreadContext;
+import net.kyori.adventure.text.renderer.TranslatableComponentRenderer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.Translatable;
+import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.translation.Translator;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -15,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ItemHub {
     public static final ItemStack NEWCDK_SUBMITINV = getNEWCDK_SUBMITINV();
@@ -297,12 +305,37 @@ public class ItemHub {
         ItemMeta cdkItem_meta = cdkItem.getItemMeta();
         List<Component> lores = new ArrayList<>();
 
-        cdkItem_meta.displayName(Component.text(cdk.getNote(), NamedTextColor.GREEN));
+        if(cdk.getNote() == null) {
+            cdkItem_meta.displayName(Component.text("(未命名)", NamedTextColor.GREEN));
+        } else {
+            cdkItem_meta.displayName(Component.text(cdk.getNote(), NamedTextColor.GREEN));
+        }
+
         lores.add(Component.text("CDK: ", NamedTextColor.WHITE).append(Component.text(cdk.getCdkString(), NamedTextColor.AQUA)));
         lores.add(Component.text("剩余数量: ", NamedTextColor.WHITE).append(Component.text(cdk.getAmountLeft(), NamedTextColor.YELLOW)));
         lores.add(Component.text("创建时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.GREEN)));
         lores.add(Component.text("过期时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getExpireTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.RED)));
         lores.add(Component.text("创建者: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreator(), NamedTextColor.BLUE)));
+
+        PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+
+        lores.add(Component.text("包含物品: ", NamedTextColor.WHITE));
+        if(cdk.getRewardCmds().size() == 0) {
+            lores.add(Component.text("  无", NamedTextColor.YELLOW));
+        } else {
+            for(ItemStack item : cdk.getRewardItems()){
+                lores.add(Component.text(String.format("  %s x%d", serializer.serialize(GlobalTranslator.render(item.displayName(), Locale.CHINA)), item.getAmount()), NamedTextColor.YELLOW));
+            }
+        }
+
+        lores.add(Component.text("包含命令: ", NamedTextColor.WHITE));
+        if(cdk.getRewardCmds().size() == 0){
+            lores.add(Component.text("  无", NamedTextColor.LIGHT_PURPLE));
+        } else {
+            for(String command : cdk.getRewardCmds()) {
+                lores.add(Component.text("  " + command, NamedTextColor.LIGHT_PURPLE));
+            }
+        }
 
         cdkItem.setItemMeta(cdkItem_meta);
         cdkItem.lore(lores);
@@ -310,19 +343,42 @@ public class ItemHub {
         return cdkItem;
     }
 
-
     public static ItemStack getLISTCDK_EXPIRECDK(CDK cdk) {
         ItemStack cdkItem = new ItemStack(Material.GUNPOWDER);
 
         ItemMeta cdkItem_meta = cdkItem.getItemMeta();
         List<Component> lores = new ArrayList<>();
 
-        cdkItem_meta.displayName(Component.text(cdk.getNote(), NamedTextColor.GRAY).append(Component.text(" [过期]", NamedTextColor.GRAY)));
+        String cdkNote = cdk.getNote();
+        if(cdkNote == null) cdkNote = "未命名";
+
+        cdkItem_meta.displayName(Component.text(cdkNote, NamedTextColor.GRAY).append(Component.text(" [已过期]", NamedTextColor.GRAY)));
         lores.add(Component.text("CDK: ", NamedTextColor.WHITE).append(Component.text(cdk.getCdkString(), NamedTextColor.AQUA)));
         lores.add(Component.text("剩余数量: ", NamedTextColor.WHITE).append(Component.text(cdk.getAmountLeft(), NamedTextColor.YELLOW)));
         lores.add(Component.text("创建时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.GREEN)));
         lores.add(Component.text("过期时间: ", NamedTextColor.WHITE).append(Component.text(cdk.getExpireTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.RED)));
         lores.add(Component.text("创建者: ", NamedTextColor.WHITE).append(Component.text(cdk.getCreator(), NamedTextColor.BLUE)));
+
+        PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+
+        lores.add(Component.text("包含物品: ", NamedTextColor.WHITE));
+        if(cdk.getRewardCmds().size() == 0) {
+            lores.add(Component.text("  无", NamedTextColor.YELLOW));
+        } else {
+            for(ItemStack item : cdk.getRewardItems()){
+                lores.add(Component.text(String.format("  %s x%d", serializer.serialize(GlobalTranslator.render(item.displayName(), Locale.CHINA)),
+                        item.getAmount()), NamedTextColor.YELLOW));
+            }
+        }
+
+        lores.add(Component.text("包含命令: ", NamedTextColor.WHITE));
+        if(cdk.getRewardCmds().size() == 0){
+            lores.add(Component.text("  无", NamedTextColor.LIGHT_PURPLE));
+        } else {
+            for(String command : cdk.getRewardCmds()) {
+                lores.add(Component.text("  " + command, NamedTextColor.LIGHT_PURPLE));
+            }
+        }
 
         cdkItem.setItemMeta(cdkItem_meta);
         cdkItem.lore(lores);

@@ -8,6 +8,12 @@ import me.maplef.mapcdk.exceptions.InsufficientInventorySpaceException;
 import me.maplef.mapcdk.utils.CDKGenerator;
 import me.maplef.mapcdk.utils.ConfigManager;
 import me.maplef.mapcdk.utils.Database;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -49,7 +55,7 @@ public class CDK {
         this.cdkString = CDKGenerator.generateCDKbyFormat(config.getString("CDK-format"));
         this.creator = creator;
         this.createTime = LocalDateTime.now();
-        this.expireTime = this.createTime.plusMonths(1);
+        this.expireTime = LocalDateTime.now().plusMonths(1);
         this.amountLeft = 10;
         this.note = note;
 
@@ -296,7 +302,7 @@ public class CDK {
         boolean is_exist;
 
         Statement stmt = c.createStatement();
-        ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info WHERE cdk-string = '%s'", this.cdkString));
+        ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info WHERE cdk_string = '%s'", this.cdkString));
         is_exist = res.next();
 
         PreparedStatement ps;
@@ -320,7 +326,7 @@ public class CDK {
 
         ps.setString(1, this.cdkString);
         ps.setInt(2, this.amountLeft);
-        ps.setTimestamp(3, Timestamp.valueOf(this.expireTime));
+        ps.setTimestamp(3, Timestamp.valueOf(this.createTime));
         ps.setTimestamp(4, Timestamp.valueOf(this.expireTime));
         ps.setString(5, this.creator);
         ps.setString(6, this.note);
@@ -370,7 +376,7 @@ public class CDK {
         ps.execute();
 
         ps = new Database().getC()
-                .prepareStatement("UPDATE cdk_receive SET amount_left = '?' WHERE cdk_string = '?'");
+                .prepareStatement("UPDATE cdk_info SET amount_left = ? WHERE cdk_string = ?");
         ps.setInt(1, this.amountLeft);
         ps.setString(2, this.cdkString);
         ps.execute();
@@ -384,5 +390,44 @@ public class CDK {
             command = command.replaceAll("%PLAYER%", player.getName());
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
         }
+    }
+
+    public Component toComponent() {
+        ComponentBuilder<TextComponent, TextComponent.Builder> componentBuilder = Component.text();
+
+        TextComponent noteComponent;
+        if(this.note == null) {
+            noteComponent = Component.text("=== " + this.cdkString, NamedTextColor.YELLOW)
+                    .append(Component.text("的基本信息 ===", NamedTextColor.YELLOW));
+        } else {
+            noteComponent = Component.text("=== " + this.note, NamedTextColor.YELLOW)
+                    .append(Component.text("的基本信息 ===", NamedTextColor.YELLOW));
+        }
+
+        TextComponent cdkComponent = Component.text("CDK: ", NamedTextColor.WHITE)
+                .append(Component.text(this.cdkString, NamedTextColor.AQUA)
+                .clickEvent(ClickEvent.copyToClipboard(this.cdkString)))
+                .hoverEvent(HoverEvent.showText(Component.text("点击复制到剪贴板")));
+
+        TextComponent leftComponent = Component.text("剩余数量: ", NamedTextColor.WHITE)
+                .append(Component.text(this.amountLeft, NamedTextColor.YELLOW));
+
+        TextComponent createTimeComponent = Component.text("创建时间: ", NamedTextColor.WHITE)
+                .append(Component.text(this.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.GREEN));
+
+        TextComponent expireTimeComponent = Component.text("过期时间: ", NamedTextColor.WHITE)
+                .append(Component.text(this.expireTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), NamedTextColor.RED));
+
+        TextComponent creatorComponent = Component.text("创建人: ", NamedTextColor.WHITE)
+                .append(Component.text(this.creator, NamedTextColor.BLUE));
+
+        componentBuilder.append(noteComponent, Component.newline());
+        componentBuilder.append(cdkComponent, Component.newline());
+        componentBuilder.append(leftComponent, Component.newline());
+        componentBuilder.append(createTimeComponent, Component.newline());
+        componentBuilder.append(expireTimeComponent, Component.newline());
+        componentBuilder.append(creatorComponent);
+
+        return componentBuilder.build();
     }
 }

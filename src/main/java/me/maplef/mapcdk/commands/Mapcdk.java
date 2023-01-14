@@ -82,10 +82,6 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
 
             }
 
-            case "cdkinfo" -> {
-
-            }
-
             case "list" -> {
                 List<CDK> allCDK, CDK_page1;
                 try {
@@ -132,6 +128,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                         player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
                                 .append(Component.text(String.format("你已经于 %s 领取了该CDK，不能再次领取",
                                         receiver.getReceiveTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))));
+                        return true;
                     }
                 }
 
@@ -151,6 +148,9 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                     e.printStackTrace();
                     return true;
                 }
+
+                player.sendMessage(Component.text(CU.t(config.getString("message-prefix")))
+                        .append(Component.text("CDK 领取成功！", NamedTextColor.GREEN, TextDecoration.BOLD)));
 
                 return true;
             }
@@ -181,7 +181,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if(args.length == 1){
-            String[] allCommands = {"help", "newcdk", "continue", "cdkinfo", "deletecdk"};
+            String[] allCommands = {"help", "newcdk", "continue", "list", "deletecdk"};
 
             List<String> commandList = new ArrayList<>();
             for(String commandName : allCommands)

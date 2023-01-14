@@ -19,10 +19,12 @@ public class CloseGUI implements Listener {
         PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
         String invTitle = serializer.serialize(e.getView().title());
 
+        if(invTitle.contains("CDK列表")) return;
+
         // inventory title is MapCDK title and is closed by player
         if(invTitle.contains("MapCDK") && e.getReason().equals(InventoryCloseEvent.Reason.PLAYER)) {
             e.getPlayer().sendMessage(Component.text(CU.t(config.getString("message-prefix", "&e[MapCDK] ")))
-                    .append(Component.text("所有更改均已自动保存，使用 /mapcdk continue 以继续").color(NamedTextColor.GREEN)));
+                    .append(Component.text("所有已提交的更改均已自动保存，使用 /mapcdk continue 以继续").color(NamedTextColor.GREEN)));
         }
     }
 }
