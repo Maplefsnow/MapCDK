@@ -13,13 +13,11 @@ import java.util.List;
 
 public class Database {
     ConfigManager configManager = new ConfigManager();
-FileConfiguration config = configManager.getConfig();
+    FileConfiguration config = configManager.getConfig();
 
     private static Connection c = connect();
 
     public void init() throws SQLException {
-        // if(config.getBoolean("use-mysql"))
-
         PreparedStatement ps = c.prepareStatement(
                 "CREATE TABLE IF NOT EXISTS cdk_info (" +
                         "    cdk_string   TEXT     PRIMARY KEY," +

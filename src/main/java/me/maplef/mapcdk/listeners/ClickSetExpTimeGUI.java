@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class ClickSetExpTimeGUI implements Listener {
@@ -83,6 +84,13 @@ public class ClickSetExpTimeGUI implements Listener {
                 }
                 case 24 -> {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.DAYS);
+                }
+
+                case 10 -> {
+                    CDKLib.cdkMap.get(clickerName).setExpireTime(LocalDateTime.now());
+                }
+                case 16 -> {
+                    CDKLib.cdkMap.get(clickerName).setExpireTime(LocalDateTime.of(2099, 12, 31, 23, 59));
                 }
             }
 

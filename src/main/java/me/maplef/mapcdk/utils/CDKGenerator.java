@@ -1,13 +1,15 @@
 package me.maplef.mapcdk.utils;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import me.maplef.mapcdk.CDK;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CDKGenerator {
-    private static final FileConfiguration config = new ConfigManager().getConfig();
 
     private static final String str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -21,24 +23,29 @@ public class CDKGenerator {
         return stringBuilder.toString();
     }
 
-    public static String generateCDK(String prefix, int lengthOfRandom, String suffix) {
-        Random random = new Random();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < lengthOfRandom; i++) {
-            int number = random.nextInt(36);
-            stringBuilder.append(str.charAt(number));
-        }
-        return prefix + stringBuilder + suffix;
-    }
     public static String generateCDKbyFormat(String format) {
-        String cdkString = config.getString("CDK-format", "**********");
+        String CDKString = format;
+
         Pattern pattern = Pattern.compile("\\*+");
-        Matcher matcher = pattern.matcher(cdkString);
+        Matcher matcher = pattern.matcher(CDKString);
 
-        while (matcher.find()){
-            cdkString = cdkString.replaceFirst("\\*+", generateCDKbyLength(matcher.group().length()));
+        do{
+            CDKString = format;
+            while (matcher.find()){
+                CDKString = CDKString.replaceFirst("\\*+", generateCDKbyLength(matcher.group().length()));
+            }
+        }while (!checkCDK(CDKString));
+
+        return CDKString;
+    }
+
+    private static boolean checkCDK(String CDK) {
+        try(Statement stmt = new Database().getC().createStatement();
+            ResultSet res = stmt.executeQuery(String.format("SELECT * FROM cdk_info WHERE cdk_string = '%s'", CDK))) {
+            return !res.next();
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
         }
-
-        return cdkString;
     }
 }

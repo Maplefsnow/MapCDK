@@ -59,6 +59,8 @@ public class ItemHub {
     public static final ItemStack EXPTIME_ADD_DAY = getEXPTIME_ADD("日");
     public static final ItemStack EXPTIME_ADD_MON = getEXPTIME_ADD("月");
     public static final ItemStack EXPTIME_ADD_YER = getEXPTIME_ADD("年");
+    public static final ItemStack EXPTIME_SET_PERM = getEXPTIME_SET_PERM();
+    public static final ItemStack EXPTIME_RESET = getEXPTIME_RESET();
     public static final ItemStack EXPTIME_DEC_SEC = getEXPTIME_DEC("秒");
     public static final ItemStack EXPTIME_DEC_MIN = getEXPTIME_DEC("分");
     public static final ItemStack EXPTIME_DEC_HOR = getEXPTIME_DEC("时");
@@ -167,7 +169,7 @@ public class ItemHub {
         List<Component> lores = new ArrayList<>();
         lores.add(Component.text("所做所有更改将保存在后台").color(NamedTextColor.LIGHT_PURPLE));
         lores.add(Component.text("使用 /mapcdk continue 重新进入编辑").color(NamedTextColor.LIGHT_PURPLE));
-        lores.add(Component.text("确定退出请按住 shift 再次单击").color(NamedTextColor.LIGHT_PURPLE));
+        lores.add(Component.text("确定退出请右键点击").color(NamedTextColor.LIGHT_PURPLE));
         confirmQuitItem_meta.lore(lores);
         confirmQuitItem.setItemMeta(confirmQuitItem_meta);
         return confirmQuitItem;
@@ -265,6 +267,22 @@ public class ItemHub {
         ItemStack decItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
         ItemMeta decItem_meta = decItem.getItemMeta();
         decItem_meta.displayName(Component.text("-1" + unit).color(NamedTextColor.RED));
+        decItem.setItemMeta(decItem_meta);
+        return decItem;
+    }
+
+    public static ItemStack getEXPTIME_SET_PERM() {
+        ItemStack addItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+        ItemMeta addItem_meta = addItem.getItemMeta();
+        addItem_meta.displayName(Component.text("永久").color(NamedTextColor.GREEN));
+        addItem.setItemMeta(addItem_meta);
+        return addItem;
+    }
+
+    public static ItemStack getEXPTIME_RESET() {
+        ItemStack decItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+        ItemMeta decItem_meta = decItem.getItemMeta();
+        decItem_meta.displayName(Component.text("重置").color(NamedTextColor.RED));
         decItem.setItemMeta(decItem_meta);
         return decItem;
     }

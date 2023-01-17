@@ -79,6 +79,9 @@ public class GUIHub {
         GUI.setItem(15, ItemHub.EXPTIME_ADD_MON);
         GUI.setItem(24, ItemHub.EXPTIME_ADD_DAY);
 
+        GUI.setItem(16, ItemHub.EXPTIME_SET_PERM);
+        GUI.setItem(10, ItemHub.EXPTIME_RESET);
+
         GUI.setItem(13, ItemHub.getEXPTIME_DISPLAY(CDKLib.cdkMap.get(player.getName()).getExpireTime()));
 
         GUI.setItem(26, ItemHub.EXPTIME_CONFIRM);
@@ -117,7 +120,7 @@ public class GUIHub {
             if(i > 26) break;
         }
 
-        if(page > 1) GUI.setItem(26, ItemHub.LISTCDK_PREV);
+        if(page > 1) GUI.setItem(27, ItemHub.LISTCDK_PREV);
         if(hasNextPage) GUI.setItem(35, ItemHub.LISTCDK_NEXT);
 
         player.openInventory(GUI);

@@ -1,12 +1,9 @@
 package me.maplef.mapcdk.listeners;
 
-import com.alibaba.fastjson2.util.Fnv;
 import me.maplef.mapcdk.CDK;
 import me.maplef.mapcdk.GUI.GUIHub;
 import me.maplef.mapcdk.GUI.ItemHub;
 import me.maplef.mapcdk.utils.Database;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -18,7 +15,6 @@ import org.bukkit.event.inventory.InventoryType;
 import java.rmi.NoSuchObjectException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.ListResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +56,10 @@ public class ClickListCDKGUI implements Listener {
             try {
                 List<CDK> prevPageCDKs = Database.getCDKPageFromDatabase(page - 1);
                 GUIHub.listCDK((Player) e.getWhoClicked(), prevPageCDKs, page - 1, true);
+                return;
             } catch (SQLException ex) {
                 ex.printStackTrace();
+                return;
             }
         }
 
