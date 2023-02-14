@@ -20,7 +20,7 @@ public class ConfigManager {
 
     public void reloadConfig(String configFileName){
         switch (configFileName) {
-            case "config.yml" -> {
+            case "config.yml" : {
                 config = YamlConfiguration.loadConfiguration(new File(Mapcdk.getInstance().getDataFolder(), configFileName));
 
                 InputStream defConfigStream = Mapcdk.getInstance().getResource(configFileName);
@@ -29,8 +29,9 @@ public class ConfigManager {
                 }
 
                 config.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, Charsets.UTF_8)));
+                break;
             }
-            case "messages.yml" -> {
+            case "messages.yml" : {
                 messageConfig = YamlConfiguration.loadConfiguration(new File(Mapcdk.getInstance().getDataFolder(), configFileName));
 
                 InputStream defConfigStream = Mapcdk.getInstance().getResource(configFileName);
@@ -39,8 +40,9 @@ public class ConfigManager {
                 }
 
                 messageConfig.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, Charsets.UTF_8)));
+                break;
             }
-            case "auto_reply.yml" -> {
+            case "auto_reply.yml" : {
                 autoReplyConfig = YamlConfiguration.loadConfiguration(new File(Mapcdk.getInstance().getDataFolder(), configFileName));
 
                 InputStream defConfigStream = Mapcdk.getInstance().getResource(configFileName);
@@ -49,6 +51,7 @@ public class ConfigManager {
                 }
 
                 autoReplyConfig.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defConfigStream, Charsets.UTF_8)));
+                break;
             }
         }
     }

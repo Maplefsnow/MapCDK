@@ -28,46 +28,53 @@ public class ClickSetNumberGUI implements Listener {
 
         if(e.getCurrentItem() != null && e.getClickedInventory() != null) {
             switch (e.getSlot()) {
-                case 26 -> {
+                case 26 : {
                     GUIHub.newCDK((Player) e.getWhoClicked());
+                    break;
                 }
 
-                case 5 -> {
+                case 5 : {
                     CDKLib.cdkMap.get(clickerName).addNumbersLeft(1);
                     e.getClickedInventory().setItem(13,
                             ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(clickerName).getAmountLeft()));
+                    break;
                 }
-                case 14 -> {
+                case 14 : {
                     CDKLib.cdkMap.get(clickerName).addNumbersLeft(10);
                     e.getClickedInventory().setItem(13,
                             ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(clickerName).getAmountLeft()));
+                    break;
                 }
-                case 23 -> {
+                case 23 : {
                     CDKLib.cdkMap.get(clickerName).addNumbersLeft(100);
                     e.getClickedInventory().setItem(13,
                             ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(clickerName).getAmountLeft()));
+                    break;
                 }
 
-                case 3 -> {
+                case 3 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).addNumbersLeft(-1);
                         e.getClickedInventory().setItem(13,
                                 ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(clickerName).getAmountLeft()));
                     } catch (IllegalArgumentException ignored){}
+                    break;
                 }
-                case 12 -> {
+                case 12 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).addNumbersLeft(-10);
                         e.getClickedInventory().setItem(13,
                                 ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(clickerName).getAmountLeft()));
                     } catch (IllegalArgumentException ignored){}
+                    break;
                 }
-                case 21 -> {
+                case 21 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).addNumbersLeft(-100);
                         e.getClickedInventory().setItem(13,
                                 ItemHub.getSETNUMBER_DISPLAY(CDKLib.cdkMap.get(clickerName).getAmountLeft()));
                     } catch (IllegalArgumentException ignored){}
+                    break;
                 }
             }
         }

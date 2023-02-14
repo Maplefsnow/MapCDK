@@ -12,13 +12,15 @@ permissions:
     children:
       mapcdk.help: true
       mapcdk.newcdk: true
-      mapcdk.deletecdk: true
-      mapcdk.cdkinfo: true
+      mapcdk.continue: true
+      mapcdk.list: true
+  mapcdk:
+    default: true
   mapcdk.help:
     default: true
   mapcdk.newcdk:
     default: op
-  mapcdk.deletecdk:
+  mapcdk.continue:
     default: op
-  mapcdk.cdkinfo:
+  mapcdk.list:
     default: op

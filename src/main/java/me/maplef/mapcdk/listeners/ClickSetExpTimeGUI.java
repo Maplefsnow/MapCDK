@@ -31,66 +31,80 @@ public class ClickSetExpTimeGUI implements Listener {
 
         if(e.getCurrentItem() != null && e.getClickedInventory() != null) {
             switch (e.getSlot()) {
-                case 26 -> {
+                case 26 : {
                     GUIHub.newCDK((Player) e.getWhoClicked());
                     return;
                 }
 
-                case 3 -> {
+                case 3 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).minusExpireTime(1, ChronoUnit.HOURS);
                     } catch (IllegalArgumentException ignored) {}
+                    break;
                 }
-                case 12 -> {
+                case 12 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).minusExpireTime(1, ChronoUnit.MINUTES);
                     } catch (IllegalArgumentException ignored) {}
+                    break;
                 }
-                case 21 -> {
+                case 21 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).minusExpireTime(1, ChronoUnit.SECONDS);
                     } catch (IllegalArgumentException ignored) {}
+                    break;
                 }
-                case 2 -> {
+                case 2 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).minusExpireTime(1, ChronoUnit.YEARS);
                     } catch (IllegalArgumentException ignored) {}
+                    break;
                 }
-                case 11 -> {
+                case 11 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).minusExpireTime(1, ChronoUnit.MONTHS);
                     } catch (IllegalArgumentException ignored) {}
+                    break;
                 }
-                case 20 -> {
+                case 20 : {
                     try {
                         CDKLib.cdkMap.get(clickerName).minusExpireTime(1, ChronoUnit.DAYS);
                     } catch (IllegalArgumentException ignored) {}
+                    break;
                 }
 
-                case 5 -> {
+                case 5 : {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.HOURS);
+                    break;
                 }
-                case 14 -> {
+                case 14 : {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.MINUTES);
+                    break;
                 }
-                case 23 -> {
+                case 23 : {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.SECONDS);
+                    break;
                 }
-                case 6 -> {
+                case 6 : {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.YEARS);
+                    break;
                 }
-                case 15 -> {
+                case 15 : {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.MONTHS);
+                    break;
                 }
-                case 24 -> {
+                case 24 : {
                     CDKLib.cdkMap.get(clickerName).addExpireTime(1, ChronoUnit.DAYS);
+                    break;
                 }
 
-                case 10 -> {
+                case 10 : {
                     CDKLib.cdkMap.get(clickerName).setExpireTime(LocalDateTime.now());
+                    break;
                 }
-                case 16 -> {
+                case 16 : {
                     CDKLib.cdkMap.get(clickerName).setExpireTime(LocalDateTime.of(2099, 12, 31, 23, 59));
+                    break;
                 }
             }
 

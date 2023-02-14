@@ -38,19 +38,23 @@ public class ClickNewCDKGUI implements Listener {
             }
 
             switch (e.getSlot()) {
-                case 0 -> {
+                case 0 : {
                     GUIHub.submitInv((Player) e.getWhoClicked());
+                    break;
                 }
-                case 1 -> {
+                case 1 : {
                     GUIHub.manageCmd((Player) e.getWhoClicked());
+                    break;
                 }
-                case 2 -> {
+                case 2 : {
                     GUIHub.setNumber((Player) e.getWhoClicked());
+                    break;
                 }
-                case 3 -> {
+                case 3 : {
                     GUIHub.setExpTime((Player) e.getWhoClicked());
+                    break;
                 }
-                case 17 -> {
+                case 17 : {
                     try {
                         CDKLib.cdkMap.get(e.getWhoClicked().getName()).exportToDataBase(new Database().getC());
                         CDKLib.cdkMap.get(e.getWhoClicked().getName()).exportToJSON(Mapcdk.getInstance().getDataFolder());
@@ -72,8 +76,9 @@ public class ClickNewCDKGUI implements Listener {
                     } catch (SQLException | IOException ex) {
                         ex.printStackTrace();
                     }
+                    break;
                 }
-                case 9 -> {
+                case 9 : {
                     if(e.getCurrentItem().equals(ItemHub.NEWCDK_QUIT)) {
                         e.getClickedInventory().setItem(9, ItemHub.NEWCDK_CONFIRMQUIT);
                     } else if (e.getCurrentItem().equals(ItemHub.NEWCDK_CONFIRMQUIT)) {
@@ -82,6 +87,7 @@ public class ClickNewCDKGUI implements Listener {
                             e.getClickedInventory().close();
                         }
                     }
+                    break;
                 }
             }
         }

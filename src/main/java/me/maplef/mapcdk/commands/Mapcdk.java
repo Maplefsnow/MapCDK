@@ -1,6 +1,5 @@
 package me.maplef.mapcdk.commands;
 
-import com.sun.source.tree.ReturnTree;
 import me.maplef.mapcdk.CDK;
 import me.maplef.mapcdk.CDKReceiver;
 import me.maplef.mapcdk.GUI.GUIHub;
@@ -10,28 +9,21 @@ import me.maplef.mapcdk.utils.CU;
 import me.maplef.mapcdk.utils.ConfigManager;
 import me.maplef.mapcdk.utils.Database;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.naming.InsufficientResourcesException;
 import javax.naming.TimeLimitExceededException;
-import javax.sound.midi.Receiver;
 import java.rmi.NoSuchObjectException;
 import java.sql.*;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -46,7 +38,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
         }
 
         switch (args[0]) {
-            case "newcdk" -> {
+            case "newcdk" : {
                 if(!sender.hasPermission("mapcdk.newcdk")){
                     sender.sendMessage("No Permission!");  //
                     return true;
@@ -61,7 +53,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                 }
             }
 
-            case "continue" -> {
+            case "continue" : {
                 if(!sender.hasPermission("mapcdk.newcdk")){
                     sender.sendMessage("No Permission!");  //
                     return true;
@@ -78,11 +70,11 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                 }
             }
 
-            case "deletecdk" -> {
-
+            case "deletecdk" : {
+                return true;
             }
 
-            case "list" -> {
+            case "list" : {
                 List<CDK> allCDK, CDK_page1;
                 try {
                     allCDK = Database.getAllCDKFromDatabase();
@@ -103,7 +95,7 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
             }
 
             // receive CDK rewards
-            default -> {
+            default : {
                 if(! (sender instanceof Player)){
                     sender.sendMessage("Only players can receive CDKs!");
                     return true;
@@ -155,8 +147,6 @@ public class Mapcdk implements CommandExecutor, TabExecutor {
                 return true;
             }
         }
-
-        return false;
     }
 
     private @NotNull String getHelpMessage(CommandSender sender) {
